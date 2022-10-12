@@ -4,7 +4,9 @@ namespace App\Controller;
 
 use App\Entity\Product;
 use App\Form\ProductType;
+use App\Repository\CategoryRepository;
 use App\Repository\ProductRepository;
+use http\Message\Body;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -16,12 +18,30 @@ use Symfony\Component\Routing\Annotation\Route;
 class ProductController extends AbstractController
 {
     /**
-     * @Route("/", name="app_product_index", methods={"GET"})
+     * @Route("/{pageId}", name="app_product_index", methods={"GET"})
      */
-    public function index(ProductRepository $productRepository): Response
+    public function index(Request $request, ProductRepository $productRepository, int $pageId = 1, CategoryRepository $categoryRepository): Response
     {
+        $min = $request->get('minPrice');
+        $max = $request->get('maxPrice');
+        $cat = $request->get('category');
+        $word = $request->get('word');
+        $this->filterRequestQuery($min, $max, $cat, $word);
+
+//        if ($min == NULL && $max == NULL && $cat == NULL)
+//            $products = $productRepository ->findAll();
+//        else
+            $products = $productRepository ->findAllGreaterThanPrice($min, $max, $cat, $word);
+
+        $numOfItems = count($products);   // total number of items satisfied above query
+        $itemsPerPage = 8; // number of items shown each page
+        $products = array_slice($products, $itemsPerPage * ($pageId - 1), $itemsPerPage);
         return $this->render('product/index.html.twig', [
-            'products' => $productRepository->findAll(),
+            'products' => $products,
+            'numOfPages' => ceil($numOfItems/$itemsPerPage),
+            'categories' => $categoryRepository ->findAll(),
+            'cat' => $cat,
+            'totalProduct' => $numOfItems
         ]);
     }
 
@@ -44,6 +64,19 @@ class ProductController extends AbstractController
             'product' => $product,
             'form' => $form,
         ]);
+    }
+
+    /**
+     * @Route("/phepcong", name="app_product_plus", methods={"GET", "POST"})
+     */
+    public function plus(Request $request): Response
+    {
+        $firstNum = $request->query->get('a');
+        $secondNum = $request->query->get('b');
+
+        return new Response(
+            '<html lang="html"><body>' .($firstNum + $secondNum).'</body></html>'
+        );
     }
 
     /**
@@ -87,4 +120,17 @@ class ProductController extends AbstractController
 
         return $this->redirectToRoute('app_product_index', [], Response::HTTP_SEE_OTHER);
     }
+
+    private function filterRequestQuery($min, $max, $cat, $word): array
+    {
+
+        return [
+            is_numeric($min) ? (float)$min : null,
+            is_numeric($max) ? (float)$max : null,
+            is_numeric($cat) ? (float)$cat : null,
+            is_string($word) ? (string)$word : null
+        ];
+    }
 }
+
+
