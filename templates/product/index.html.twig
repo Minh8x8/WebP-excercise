@@ -3,35 +3,73 @@
 {% block title %}Product index{% endblock %}
 
 {% block body %}
-    <h1>Product index</h1>
+    <div class="container-md" >
+        <div class="row">
+            <div class="col-3">
+                <form action={{ path('app_product_index') }} method="get">
+                                        Category:
+                                        <select name="category">
+                                            <option value="0">All</option>
+                                            {% for category in categories %}
+                                            <option value="{{ category.Id }}"
+                                            {% if (cat == category.Id) %}
+                                                    selected
+                                            {% endif %}
+                                            >{{ category.Name }}</option>
+                                            {% endfor %}
+                                        </select><br>
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Id</th>
-                <th>Name</th>
-                <th>Price</th>
-                <th>actions</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for product in products %}
-            <tr>
-                <td>{{ product.id }}</td>
-                <td>{{ product.Name }}</td>
-                <td>{{ product.Price }}</td>
-                <td>
-                    <a href="{{ path('app_product_show', {'id': product.id}) }}">show</a>
-                    <a href="{{ path('app_product_edit', {'id': product.id}) }}">edit</a>
-                </td>
-            </tr>
-        {% else %}
-            <tr>
-                <td colspan="4">no records found</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+                    Min Price: <input type="number" name="minPrice"><br>
+                    Max Price: <input type="number" name="maxPrice"><br><br>
+                    <input type="submit" value="Filter" class="btn btn-primary"> |
+                    <a href="{{ path('app_product_index') }}"
+                       class="btn btn-primary">Reset</a>
+                </form>
+                <br/><a href="{{ path('app_product_new') }}"><button class="btn btn-primary" type="button">Create new</button></a>
+            </div>
+            <div class="col-9">
+                <div class="container">
+                    <h4>Product Listing</h4>
+                    <div class="row row-cols-1 row-cols-md-4 g-4">
+                        {% for product in products %}
+                            <div class="col">
+                                <div class="card h-100">
+                                    <img class="card-img-top" src="{{ asset('images/logo.png') }}">
+                                    <div class="card-body">
+                                        <h5 class="card-title">{{ product.Name }}</h5>
+                                        <h6 class="card-subtitle">Category: {{ product.category.name }}</h6>
+                                        <p>Price: ${{ product.price }}</p>
+                                    </div>
+                                    <div class="card-footer">
+                                        <a href="{{ path('app_product_show', {'id': product.id}) }}"
+                                           class="btn btn-primary">Show</a>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
 
-    <a href="{{ path('app_product_new') }}">Create new</a>
+
+            <div class="row mt-2">
+                <div style="display:flex;text-align:center;justify-content:center">
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination">
+                            {% for i in range(1, numOfPages) %}
+                                {% set style = app.request.get('pageId')==i ? "active" : "" %}
+                                <li class="page-item {{ style }}">
+                                    <a class="page-link"
+                                       href={{ path(app.request.attributes.get('_route'),
+                                        app.request.query.all|merge({'pageId': i})) }}>{{ i }}</a>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    </div>
 {% endblock %}
