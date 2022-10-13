@@ -41,7 +41,8 @@ class ProductController extends AbstractController
             'numOfPages' => ceil($numOfItems/$itemsPerPage),
             'categories' => $categoryRepository ->findAll(),
             'cat' => $cat,
-            'totalProduct' => $numOfItems
+            'totalProduct' => $numOfItems,
+            'selectedCat' => $cat
         ]);
     }
 

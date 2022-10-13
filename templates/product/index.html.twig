@@ -6,16 +6,13 @@
     <div class="container-md" >
         <div class="row">
             <div class="col-3">
+                <a href="{{ path('app_product_index', {'category': 2} )}}">a</a>
                 <form action={{ path('app_product_index') }} method="get">
                                         Category:
                                         <select name="category">
                                             <option value="0">All</option>
                                             {% for category in categories %}
-                                            <option value="{{ category.Id }}"
-                                            {% if (cat == category.Id) %}
-                                                    selected
-                                            {% endif %}
-                                            >{{ category.Name }}</option>
+                                            <option value="{{ category.Id }}" {{ selectedCat == category.Id ? 'selected' }} >{{ category.Name }}</option>
                                             {% endfor %}
                                         </select><br>
 
@@ -26,6 +23,7 @@
                     <input type="submit" value="Filter" class="btn btn-outline-warning"> |
                     <a href="{{ path('app_product_index') }}"
                        class="btn btn-outline-warning">Reset</a>
+
                 </form>
                 <br/><a href="{{ path('app_product_new') }}"><button class="btn btn-outline-warning" type="button">Create new</button></a>
             </div>
@@ -74,3 +72,4 @@
     </div>
     </div>
 {% endblock %}
+
