@@ -121,17 +121,13 @@ class ProductController extends AbstractController
 
         return $this->redirectToRoute('app_product_index', [], Response::HTTP_SEE_OTHER);
     }
-
     private function filterRequestQuery($min, $max, $cat, $word): array
     {
-
         return [
             is_numeric($min) ? (float)$min : null,
             is_numeric($max) ? (float)$max : null,
             is_numeric($cat) ? (float)$cat : null,
             is_string($word) ? (string)$word : null
-        ];
+      ];
     }
 }
-
-
