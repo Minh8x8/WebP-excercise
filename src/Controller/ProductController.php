@@ -4,8 +4,10 @@ namespace App\Controller;
 
 use App\Entity\Product;
 use App\Form\ProductType;
+use App\Form\RegistrationFormType;
 use App\Repository\CategoryRepository;
 use App\Repository\ProductRepository;
+use App\Repository\UserRepository;
 use http\Message\Body;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -17,6 +19,30 @@ use Symfony\Component\Routing\Annotation\Route;
  */
 class ProductController extends AbstractController
 {
+    /**
+     * @Route("/new", name="app_product_new", methods={"GET", "POST"})
+     */
+    public function new(Request $request, ProductRepository $productRepository): Response
+    {
+        $product = new Product();
+        $form = $this->createForm(ProductType::class, $product);
+        $form->handleRequest($request);
+        $this->denyAccessUnlessGranted('ROLE_USER');
+        $user= $this->getUser();
+        $product -> setOwner($user);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $productRepository->add($product, true);
+
+            return $this->redirectToRoute('app_product_index', [], Response::HTTP_SEE_OTHER);
+        }
+
+        return $this->renderForm('product/new.html.twig', [
+            'product' => $product,
+            'form' => $form,
+        ]);
+    }
+
     /**
      * @Route("/{pageId}", name="app_product_index", methods={"GET"})
      */
@@ -46,27 +72,6 @@ class ProductController extends AbstractController
     }
 
     /**
-     * @Route("/new", name="app_product_new", methods={"GET", "POST"})
-     */
-    public function new(Request $request, ProductRepository $productRepository): Response
-    {
-        $product = new Product();
-        $form = $this->createForm(ProductType::class, $product);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $productRepository->add($product, true);
-
-            return $this->redirectToRoute('app_product_index', [], Response::HTTP_SEE_OTHER);
-        }
-
-        return $this->renderForm('product/new.html.twig', [
-            'product' => $product,
-            'form' => $form,
-        ]);
-    }
-
-    /**
      * @Route("/phepcong", name="app_product_plus", methods={"GET", "POST"})
      */
     public function plus(Request $request): Response
@@ -80,7 +85,7 @@ class ProductController extends AbstractController
     }
 
     /**
-     * @Route("/{id}", name="app_product_show", methods={"GET"})
+     * @Route("show/{id}", name="app_product_show", methods={"GET"})
      */
     public function show(Product $product): Response
     {
@@ -96,7 +101,11 @@ class ProductController extends AbstractController
     {
         $form = $this->createForm(ProductType::class, $product);
         $form->handleRequest($request);
+        $user = $this->getUser();
 
+        if ($user !== $product->getOwner()) {
+            return $this->redirectToRoute('app_product_index', [], Response::HTTP_SEE_OTHER);
+        }
         if ($form->isSubmitted() && $form->isValid()) {
             $productRepository->add($product, true);
 
