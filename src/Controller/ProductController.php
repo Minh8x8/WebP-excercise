@@ -91,7 +91,7 @@ class ProductController extends AbstractController
     }
 
     /**
-     * @Route("/{id}/edit", name="app_product_edit", methods={"GET", "POST"})
+    * @Route("/{id}/edit", name="app_product_edit", methods={"GET", "POST"})
      */
     public function edit(Request $request, Product $product, ProductRepository $productRepository): Response
     {
